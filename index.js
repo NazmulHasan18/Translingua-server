@@ -27,12 +27,28 @@ async function run() {
    try {
       // Connect the client to the server	(optional starting in v4.7)
       await client.connect();
+      // !here is starting all operations
+
+      const instructorCollection = client.db("translinguaDB").collection("instructors");
+      const quoteCollection = client.db("translinguaDB").collection("quotes");
+
+      app.get("/quotes", async (req, res) => {
+         const quotes = await quoteCollection.find({}).toArray();
+         const result = quotes[parseInt(Math.round(Math.random() * 100))];
+         res.send(result);
+      });
+
+      app.get("/instructors", async (req, res) => {
+         const result = await instructorCollection.find({}).sort({ current_students: -1 }).toArray();
+         res.send(result);
+      });
+
       // Send a ping to confirm a successful connection
       await client.db("admin").command({ ping: 1 });
       console.log("Pinged your deployment. You successfully connected to MongoDB!");
    } finally {
       // Ensures that the client will close when you finish/error
-      await client.close();
+      //   await client.close();
    }
 }
 run().catch(console.dir);
