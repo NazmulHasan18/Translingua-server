@@ -19,8 +19,7 @@
       "teaching_methodology": "I tailor my Mandarin Chinese lessons to suit the individual needs and interests of my students. I focus on a balanced approach to all language skills.",
       "total_seats": 30,
       "current_students": 28,
-      "price": 35,
-      "status": "approved"
+      "price": 35
    },
    {
       "name": "Sonia Verma",
@@ -42,8 +41,7 @@
       "teaching_methodology": "I provide a comprehensive Hindi learning experience with a focus on practical usage and cultural aspects. My goal is to make the learning process enjoyable and effective.",
       "total_seats": 20,
       "current_students": 18,
-      "price": 25,
-      "status": "approved"
+      "price": 25
    },
    {
       "name": "Maria Gonzalez",
@@ -65,8 +63,7 @@
       "teaching_methodology": "I employ various interactive teaching methods to engage students in active learning and promote proficiency in Spanish. Cultural immersion is an integral part of my lessons.",
       "total_seats": 25,
       "current_students": 22,
-      "price": 30,
-      "status": "approved"
+      "price": 30
    },
    {
       "name": "John Smith",
@@ -88,8 +85,7 @@
       "teaching_methodology": "I employ a communicative approach to teach English, focusing on practical usage and real-life scenarios. I encourage active participation and provide constructive feedback.",
       "total_seats": 35,
       "current_students": 31,
-      "price": 40,
-      "status": "approved"
+      "price": 40
    },
    {
       "name": "Tanaka Hiroshi",
@@ -111,8 +107,7 @@
       "teaching_methodology": "私は独自の教材と実践的なアプローチを使用して日本語を教えます。会話、読解、文法など、幅広いスキルの向上を目指します。",
       "total_seats": 15,
       "current_students": 12,
-      "price": 30,
-      "status": "approved"
+      "price": 30
    },
    {
       "name": "Anna Petrov",
@@ -134,8 +129,7 @@
       "teaching_methodology": "Я использую коммуникативный подход в обучении русскому языку, акцентируя внимание на практическом использовании языка в реальных ситуациях.",
       "total_seats": 25,
       "current_students": 20,
-      "price": 35,
-      "status": "approved"
+      "price": 35
    },
    {
       "name": "Mohammed Ahmed",
@@ -157,8 +151,7 @@
       "teaching_methodology": "أقوم بتوفير تجربة تعلم شاملة للغة العربية مع التركيز على الممارسة العملية والجوانب الثقافية. هدفي هو جعل عملية التعلم ممتعة وفعالة.",
       "total_seats": 20,
       "current_students": 18,
-      "price": 30,
-      "status": "approved"
+      "price": 30
    },
    {
       "name": "Kim Ji-hyun",
@@ -180,8 +173,7 @@
       "teaching_methodology": "제가 제공하는 한국어 수업은 실용적인 사용과 문화 측면에 중점을 둔 ganz인 학습 경험을 제공합니다.",
       "total_seats": 15,
       "current_students": 12,
-      "price": 35,
-      "status": "approved"
+      "price": 35
    },
    {
       "name": "Sophie Dupont",
@@ -203,7 +195,6 @@
       "teaching_methodology": "J'adopte une approche communicative pour enseigner le français, en mettant l'accent sur son utilisation pratique et des situations réelles.",
       "total_seats": 30,
       "current_students": 26,
-      "price": 25,
-      "status": "approved"
+      "price": 25
    }
 ]

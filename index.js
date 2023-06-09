@@ -2,6 +2,7 @@ const express = require("express");
 const app = express();
 var cors = require("cors");
 const dotenv = require("dotenv");
+const jwt = require("jsonwebtoken");
 const port = process.env.PORT || 5000;
 
 // middleware for server
@@ -11,7 +12,7 @@ app.use(express.json());
 
 // mongoDB starts Here
 
-const { MongoClient, ServerApiVersion } = require("mongodb");
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.lvw8wzq.mongodb.net/?retryWrites=true&w=majority`;
 
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
@@ -32,6 +33,13 @@ async function run() {
       const instructorCollection = client.db("translinguaDB").collection("instructors");
       const quoteCollection = client.db("translinguaDB").collection("quotes");
 
+      // !jwt token create and post
+      app.post("/jwt", (req, res) => {
+         const user = req.body;
+         const token = jwt.sign({ user }, process.env.PRIVATE_KEY, { expiresIn: "1h" });
+         res.send(token);
+      });
+
       app.get("/quotes", async (req, res) => {
          const quotes = await quoteCollection.find({}).toArray();
          const result = quotes[parseInt(Math.round(Math.random() * 100))];
@@ -40,6 +48,12 @@ async function run() {
 
       app.get("/instructors", async (req, res) => {
          const result = await instructorCollection.find({}).sort({ current_students: -1 }).toArray();
+         res.send(result);
+      });
+
+      app.get("/instructor/:id", async (req, res) => {
+         const id = req.params.id;
+         const result = await instructorCollection.findOne({ _id: new ObjectId(id) });
          res.send(result);
       });
 
