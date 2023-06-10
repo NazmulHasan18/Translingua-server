@@ -1,6 +1,6 @@
 const express = require("express");
 const app = express();
-var cors = require("cors");
+const cors = require("cors");
 const dotenv = require("dotenv");
 const jwt = require("jsonwebtoken");
 const port = process.env.PORT || 5000;
@@ -9,6 +9,22 @@ const port = process.env.PORT || 5000;
 dotenv.config();
 app.use(cors());
 app.use(express.json());
+
+const jwtVerify = (req, res, next) => {
+   const authorization = req.headers.authorization;
+   if (!authorization) {
+      return res.status(401).send({ error: true, message: "No authorization Token" });
+   }
+   const token = authorization.split(" ")[1];
+
+   jwt.verify(token, process.env.PRIVATE_KEY, (err, decoded) => {
+      if (err) {
+         return res.status(401).send({ error: true, message: "Unauthorized User" });
+      }
+      req.email = decoded.user.email;
+      next();
+   });
+};
 
 // mongoDB starts Here
 
@@ -58,20 +74,30 @@ async function run() {
          }
       });
 
-      app.get("/user/:email", async (req, res) => {
+      app.get("/user/:email", jwtVerify, async (req, res) => {
          const email = req.params.email;
+         if (email !== req.email) {
+            return res.status(403).send({ error: true, message: "Forbidden access" });
+         }
          const result = await userCollection.findOne({ email: email });
          res.send(result);
       });
 
       // for student classes
 
-      app.post("/booked_class/:id", async (req, res) => {
+      app.post("/booked_class/:id", jwtVerify, async (req, res) => {
          const id = req.params.id;
          const email = req.query.email;
+
+         if (email !== req.email) {
+            return res.status(403).send({ error: true, message: "Forbidden access" });
+         }
+
          const findClass = await classCollection.findOne({ _id: new ObjectId(id) });
          findClass.student_email = email;
+         findClass.class_id = findClass.id;
          findClass.status = "pending";
+         delete findClass._id;
          const result = await bookedClassCollection.insertOne(findClass);
          res.send(result);
       });
