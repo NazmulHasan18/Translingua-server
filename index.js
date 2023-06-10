@@ -31,9 +31,11 @@ async function run() {
 
       // ?here is starting all operations
 
+      const userCollection = client.db("translinguaDB").collection("users");
       const quoteCollection = client.db("translinguaDB").collection("quotes");
       const instructorCollection = client.db("translinguaDB").collection("instructors");
       const classCollection = client.db("translinguaDB").collection("classes");
+      const bookedClassCollection = client.db("translinguaDB").collection("bookedClasses");
 
       // !jwt token create and post
 
@@ -41,6 +43,37 @@ async function run() {
          const user = req.body;
          const token = jwt.sign({ user }, process.env.PRIVATE_KEY, { expiresIn: "1h" });
          res.send(token);
+      });
+
+      // ?user api here
+
+      app.post("/users", async (req, res) => {
+         const user = req.body;
+         const existUser = await userCollection.findOne({ email: user.email });
+         if (existUser) {
+            return res.send("user already exists");
+         } else {
+            const result = await userCollection.insertOne(user);
+            res.send(result);
+         }
+      });
+
+      app.get("/user/:email", async (req, res) => {
+         const email = req.params.email;
+         const result = await userCollection.findOne({ email: email });
+         res.send(result);
+      });
+
+      // for student classes
+
+      app.post("/booked_class/:id", async (req, res) => {
+         const id = req.params.id;
+         const email = req.query.email;
+         const findClass = await classCollection.findOne({ _id: new ObjectId(id) });
+         findClass.student_email = email;
+         findClass.status = "pending";
+         const result = await bookedClassCollection.insertOne(findClass);
+         res.send(result);
       });
 
       // ?its quotes api
