@@ -85,7 +85,7 @@ async function run() {
 
       // for student classes
 
-      app.post("/booked_class/:id", jwtVerify, async (req, res) => {
+      app.post("/selected_class/:id", jwtVerify, async (req, res) => {
          const id = req.params.id;
          const email = req.query.email;
 
@@ -95,10 +95,50 @@ async function run() {
 
          const findClass = await classCollection.findOne({ _id: new ObjectId(id) });
          findClass.student_email = email;
-         findClass.class_id = findClass.id;
+         findClass.class_id = findClass._id;
          findClass.status = "pending";
          delete findClass._id;
          const result = await bookedClassCollection.insertOne(findClass);
+         res.send(result);
+      });
+      app.get("/selected_classes", jwtVerify, async (req, res) => {
+         const email = req.query.email;
+
+         if (email !== req.email) {
+            return res.status(403).send({ error: true, message: "Forbidden access" });
+         }
+
+         const result = await bookedClassCollection.find({ student_email: email }).toArray();
+         res.send(result || []);
+      });
+
+      app.delete("/selected_class/:id", jwtVerify, async (req, res) => {
+         const id = req.params.id;
+         const email = req.query.email;
+         if (email !== req.email) {
+            return res.status(403).send({ error: true, message: "Forbidden access" });
+         }
+         const result = await bookedClassCollection.deleteOne({ _id: new ObjectId(id) });
+         res.send(result);
+      });
+      // !add class for instructor
+
+      app.post("/add_class", jwtVerify, async (req, res) => {
+         const email = req.query.email;
+         if (email !== req.email) {
+            return res.status(403).send({ error: true, message: "Forbidden access" });
+         }
+         const classs = req.body;
+         const result = await classCollection.insertOne(classs);
+         res.send(result);
+      });
+
+      app.get("/instructor_classes/:email", jwtVerify, async (req, res) => {
+         const email = req.params.email;
+         if (email !== req.email) {
+            return res.status(403).send({ error: true, message: "Forbidden access" });
+         }
+         const result = await classCollection.find({ "teacher.email": email }).toArray();
          res.send(result);
       });
 
