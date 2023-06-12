@@ -7,8 +7,26 @@ const port = process.env.PORT || 5000;
 
 // middleware for server
 dotenv.config();
+const stripe = require("stripe")(process.env.API_SECRET_KEY);
 app.use(cors());
 app.use(express.json());
+
+// const jwtVerify = (req, res, next) => {
+//    const token = req.header("Authorization");
+//    if (!token) {
+//       return res.status(401).json({ error: "No token provided" });
+//    }
+
+//    try {
+//       const decoded = jwt.verify(token, process.env.PRIVATE_KEY);
+//       // Assuming the Stripe API key is stored in the 'stripeApiKey' field of the decoded token
+//       const stripeApiKey = decoded.stripeApiKey;
+//       req.headers["Authorization"] = `Bearer ${stripeApiKey}`;
+//       next();
+//    } catch (error) {
+//       res.status(401).json({ error: "Invalid token" });
+//    }
+// };
 
 const jwtVerify = (req, res, next) => {
    const authorization = req.headers.authorization;
@@ -52,6 +70,7 @@ async function run() {
       const instructorCollection = client.db("translinguaDB").collection("instructors");
       const classCollection = client.db("translinguaDB").collection("classes");
       const reviewCollection = client.db("translinguaDB").collection("reviews");
+      const paymentCollection = client.db("translinguaDB").collection("payments");
       const bookedClassCollection = client.db("translinguaDB").collection("bookedClasses");
 
       // !jwt token create and post
@@ -80,7 +99,6 @@ async function run() {
          if (email !== req.email) {
             return res.status(403).send({ error: true, message: "Forbidden access" });
          }
-         console.log("calling");
          const result = await userCollection.find({}).toArray();
          res.send(result);
       });
@@ -110,7 +128,7 @@ async function run() {
          res.send(result);
       });
 
-      // for student classes
+      // !for student classes
 
       app.post("/selected_class/:id", jwtVerify, async (req, res) => {
          const id = req.params.id;
@@ -148,6 +166,23 @@ async function run() {
          const result = await bookedClassCollection.deleteOne({ _id: new ObjectId(id) });
          res.send(result);
       });
+
+      // !Payment for student
+
+      app.post("/create-payment-intent", jwtVerify, async (req, res) => {
+         const { price } = req.body;
+         const amount = price * 100;
+         const paymentIntent = await stripe.paymentIntents.create({
+            amount: amount,
+            currency: "usd",
+            payment_method_types: ["card"],
+         });
+         res.send({
+            clientSecret: paymentIntent.client_secret,
+         });
+      });
+
+      // !instructor
 
       app.get("/instructor_classes/:email", jwtVerify, async (req, res) => {
          const email = req.params.email;
@@ -207,6 +242,14 @@ async function run() {
          res.send(result);
       });
 
+      // !Payment methods
+      app.post("/payments", jwtVerify, async (req, res) => {
+         console.log("entered");
+         const { payInfo } = req.body;
+         const result = await paymentCollection.insertOne(payInfo);
+         res.send(result);
+      });
+
       // !add class for instructor
 
       app.post("/add_class", jwtVerify, async (req, res) => {
@@ -238,6 +281,20 @@ async function run() {
          res.send(result);
       });
 
+      app.delete("/classes", jwtVerify, async (req, res) => {
+         const id = req.query.id;
+         const email = req.query.email;
+         if (email) {
+            console.log(email);
+            const result = await bookedClassCollection.deleteMany({ student_email: email });
+            res.send(result);
+         } else if (id) {
+            console.log(id);
+            const result = await bookedClassCollection.deleteOne({ _id: new ObjectId(id) });
+            res.send(result);
+         }
+      });
+
       app.patch("/class_feedback/:id", jwtVerify, async (req, res) => {
          const email = req.query.email;
          const data = req.body;
@@ -251,7 +308,6 @@ async function run() {
             },
          };
 
-         console.log(id);
          const result = await classCollection.updateOne({ _id: new ObjectId(id) }, updateDoc);
          res.send(result);
       });
