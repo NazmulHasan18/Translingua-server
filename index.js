@@ -43,7 +43,7 @@ const client = new MongoClient(uri, {
 async function run() {
    try {
       // Connect the client to the server	(optional starting in v4.7)
-      await client.connect();
+      // await client.connect();
 
       // ?here is starting all operations
 
@@ -51,6 +51,7 @@ async function run() {
       const quoteCollection = client.db("translinguaDB").collection("quotes");
       const instructorCollection = client.db("translinguaDB").collection("instructors");
       const classCollection = client.db("translinguaDB").collection("classes");
+      const reviewCollection = client.db("translinguaDB").collection("reviews");
       const bookedClassCollection = client.db("translinguaDB").collection("bookedClasses");
 
       // !jwt token create and post
@@ -141,6 +142,11 @@ async function run() {
          const result = await classCollection.find({ "teacher.email": email }).toArray();
          res.send(result);
       });
+      app.get("/single_instructor_classes/:email", async (req, res) => {
+         const email = req.params.email;
+         const result = await classCollection.find({ "teacher.email": email }).toArray();
+         res.send(result);
+      });
 
       // ?its quotes api
 
@@ -160,6 +166,12 @@ async function run() {
       app.get("/instructor/:id", async (req, res) => {
          const id = req.params.id;
          const result = await instructorCollection.findOne({ _id: new ObjectId(id) });
+         res.send(result);
+      });
+
+      // review data here
+      app.get("/reviews", async (req, res) => {
+         const result = await reviewCollection.find({}).toArray();
          res.send(result);
       });
 
