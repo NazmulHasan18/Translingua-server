@@ -132,11 +132,11 @@ async function run() {
       // !for student classes
 
       app.post("/students_classes", jwtVerify, async (req, res) => {
-         const { ids } = req.body;
-         const objectIds = ids.map((id) => new ObjectId(id));
-         const classes = await bookedClassCollection.find({ _id: { $in: objectIds } }).toArray();
+         const { classes } = req.body;
+         const objectIds = classes.map((classs) => new ObjectId(classs._id));
+         const paidClasses = await bookedClassCollection.find({ _id: { $in: objectIds } }).toArray();
 
-         const result = await studentClassCollection.insertMany(classes, { ordered: true });
+         const result = await studentClassCollection.insertMany(paidClasses, { ordered: true });
 
          res.send(result);
       });
@@ -157,6 +157,7 @@ async function run() {
          const result = await bookedClassCollection.insertOne(findClass);
          res.send(result);
       });
+
       app.get("/selected_classes", jwtVerify, async (req, res) => {
          const email = req.query.email;
 
@@ -182,7 +183,7 @@ async function run() {
 
       app.post("/create-payment-intent", jwtVerify, async (req, res) => {
          const { price } = req.body;
-         const amount = price * 100;
+         const amount = parseInt(price * 100);
          const paymentIntent = await stripe.paymentIntents.create({
             amount: amount,
             currency: "usd",
@@ -191,6 +192,12 @@ async function run() {
          res.send({
             clientSecret: paymentIntent.client_secret,
          });
+      });
+
+      app.get("/payments/:email", jwtVerify, async (req, res) => {
+         const email = req.params.email;
+         const result = await paymentCollection.find({ "user.email": email }).sort({ _id: -1 }).toArray();
+         res.send(result);
       });
 
       // !instructor
@@ -255,13 +262,18 @@ async function run() {
 
       // !Payment methods
       app.post("/payments", jwtVerify, async (req, res) => {
-         console.log("entered");
          const { payInfo } = req.body;
          const result = await paymentCollection.insertOne(payInfo);
          res.send(result);
       });
 
       // !add class for instructor
+
+      app.get("/my_classes/:email", jwtVerify, async (req, res) => {
+         const email = req.params.email;
+         const result = await studentClassCollection.find({ student_email: email }).toArray();
+         res.send(result);
+      });
 
       app.post("/add_class", jwtVerify, async (req, res) => {
          const email = req.query.email;
@@ -292,15 +304,22 @@ async function run() {
          res.send(result);
       });
 
+      app.patch("/classes", jwtVerify, async (req, res) => {
+         const { classes } = req.body;
+         const objectIds = classes.map((classs) => new ObjectId(classs.class_id));
+         const filter = { _id: { $in: objectIds } };
+         const update = { $inc: { current_students: 1 } };
+         const findClass = await classCollection.updateMany(filter, update);
+         res.send(findClass);
+      });
+
       app.delete("/classes", jwtVerify, async (req, res) => {
          const id = req.query.id;
          const email = req.query.email;
          if (email) {
-            console.log(email);
             const result = await bookedClassCollection.deleteMany({ student_email: email });
             res.send(result);
          } else if (id) {
-            console.log(id);
             const result = await bookedClassCollection.deleteOne({ _id: new ObjectId(id) });
             res.send(result);
          }
