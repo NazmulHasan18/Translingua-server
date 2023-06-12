@@ -101,14 +101,12 @@ async function run() {
          if (email !== req.email) {
             return res.status(403).send({ error: true, message: "Forbidden access" });
          }
-         console.log(role);
          const updateDoc = {
             $set: {
                role: role.role,
             },
          };
          const result = await userCollection.updateOne({ _id: new ObjectId(id) }, updateDoc);
-         console.log(result);
          res.send(result);
       });
 
@@ -150,17 +148,6 @@ async function run() {
          const result = await bookedClassCollection.deleteOne({ _id: new ObjectId(id) });
          res.send(result);
       });
-      // !add class for instructor
-
-      app.post("/add_class", jwtVerify, async (req, res) => {
-         const email = req.query.email;
-         if (email !== req.email) {
-            return res.status(403).send({ error: true, message: "Forbidden access" });
-         }
-         const classs = req.body;
-         const result = await classCollection.insertOne(classs);
-         res.send(result);
-      });
 
       app.get("/instructor_classes/:email", jwtVerify, async (req, res) => {
          const email = req.params.email;
@@ -169,7 +156,6 @@ async function run() {
             return res.status(403).send({ error: true, message: "Forbidden access" });
          }
          const result = await classCollection.find({ "teacher.email": email }).toArray();
-         console.log(email, result);
          res.send(result);
       });
       app.get("/single_instructor_classes/:email", async (req, res) => {
@@ -217,7 +203,56 @@ async function run() {
       });
 
       app.get("/classes", async (req, res) => {
-         const result = await classCollection.find({}).toArray();
+         const result = await classCollection.find({}).sort({ _id: -1 }).toArray();
+         res.send(result);
+      });
+
+      // !add class for instructor
+
+      app.post("/add_class", jwtVerify, async (req, res) => {
+         const email = req.query.email;
+         if (email !== req.email) {
+            return res.status(403).send({ error: true, message: "Forbidden access" });
+         }
+         const classs = req.body;
+         const result = await classCollection.insertOne(classs);
+         res.send(result);
+      });
+
+      app.patch("/class/:id", jwtVerify, async (req, res) => {
+         const email = req.query.email;
+         const data = req.body;
+         const id = req.params.id;
+         if (email !== req.email) {
+            return res.status(403).send({ error: true, message: "Forbidden access" });
+         }
+
+         const updateDoc = {
+            $set: {
+               status: data.status,
+               reviewed: data.reviewed,
+            },
+         };
+         const result = await classCollection.updateOne({ _id: new ObjectId(id) }, updateDoc);
+
+         res.send(result);
+      });
+
+      app.patch("/class_feedback/:id", jwtVerify, async (req, res) => {
+         const email = req.query.email;
+         const data = req.body;
+         const id = req.params.id;
+         if (email !== req.email) {
+            return res.status(403).send({ error: true, message: "Forbidden access" });
+         }
+         const updateDoc = {
+            $set: {
+               feedback: data.feedback,
+            },
+         };
+
+         console.log(id);
+         const result = await classCollection.updateOne({ _id: new ObjectId(id) }, updateDoc);
          res.send(result);
       });
 
