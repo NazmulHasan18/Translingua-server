@@ -69,6 +69,7 @@ async function run() {
       const quoteCollection = client.db("translinguaDB").collection("quotes");
       const instructorCollection = client.db("translinguaDB").collection("instructors");
       const classCollection = client.db("translinguaDB").collection("classes");
+      const studentClassCollection = client.db("translinguaDB").collection("studentClasses");
       const reviewCollection = client.db("translinguaDB").collection("reviews");
       const paymentCollection = client.db("translinguaDB").collection("payments");
       const bookedClassCollection = client.db("translinguaDB").collection("bookedClasses");
@@ -129,6 +130,16 @@ async function run() {
       });
 
       // !for student classes
+
+      app.post("/students_classes", jwtVerify, async (req, res) => {
+         const { ids } = req.body;
+         const objectIds = ids.map((id) => new ObjectId(id));
+         const classes = await bookedClassCollection.find({ _id: { $in: objectIds } }).toArray();
+
+         const result = await studentClassCollection.insertMany(classes, { ordered: true });
+
+         res.send(result);
+      });
 
       app.post("/selected_class/:id", jwtVerify, async (req, res) => {
          const id = req.params.id;
