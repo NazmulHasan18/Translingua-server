@@ -29,6 +29,7 @@ app.use(express.json());
 // };
 
 const jwtVerify = (req, res, next) => {
+   console.log("hit");
    const authorization = req.headers.authorization;
    if (!authorization) {
       return res.status(401).send({ error: true, message: "No authorization Token" });
@@ -241,6 +242,12 @@ async function run() {
       // review data here
       app.get("/reviews", async (req, res) => {
          const result = await reviewCollection.find({}).toArray();
+         res.send(result);
+      });
+
+      app.post("/review", jwtVerify, async (req, res) => {
+         const review = req.body;
+         const result = await reviewCollection.insertOne(review);
          res.send(result);
       });
 
